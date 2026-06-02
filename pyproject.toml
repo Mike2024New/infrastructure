@@ -1,0 +1,17 @@
+[project]
+name = "infrastructure-factory"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "infrastructure",
+]
+
+[tool.uv.workspace]
+members = [
+    "src/infrastructure",
+]
+
+[tool.uv.sources]
+infrastructure = { workspace = true }
