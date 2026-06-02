@@ -1,6 +1,8 @@
 from pathlib import Path
 import sys
 
+__all__ = ['get_root_dir_path']
+
 
 def get_root_dir_path(venv_dir_name: str = '.venv') -> Path:
     """

@@ -1,12 +1,24 @@
 import subprocess
-from pathlib import Path
 import uuid
+from infrastructure.path_utils.path_finder import get_root_dir_path
+
+__all__ = ['GitClient']
+
+"""
+Простейший гит клиент, для заброса пакетов на репозиторий. И принятия пакетов через uv в других проектах.
+"""
 
 
 class GitClient:
 
-    def __init__(self, root_dir: Path, git_url: str, branch: str = 'main'):
-        self._root_dir = root_dir
+    def __init__(self, git_url: str, branch: str = 'main', venv_dir_name: str = '.venv'):
+        """
+
+        :param git_url:
+        :param branch:
+        :param venv_dir_name:
+        """
+        self._root_dir = get_root_dir_path(venv_dir_name=venv_dir_name)
         self._git_url = git_url
         self._branch = branch
         self._git_http_url = 'https://github.com/' + self._git_url.split(':')[-1].replace('.git', '')
@@ -154,17 +166,3 @@ class GitClient:
             'url_uv': self._git_url.replace('git@github.com:', 'git+https://github.com/'),
             'branch': self._branch,
         }
-
-
-if __name__ == '__main__':
-    from infrastructure.path_utils.path_finder import get_root_dir_path
-
-    git_client = GitClient(
-        root_dir=get_root_dir_path(),
-        git_url='git@github.com:Mike2024New/infrastructure.git',
-        branch='main',
-    )
-    git_client.commit(commit_message_auto=True)
-    # git_client.uv_install_package(git_url='git@github.com:Mike2024New/TOOLS.git')
-    # git_client.pull()
-    # print(git_client.info())

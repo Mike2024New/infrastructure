@@ -1,7 +1,9 @@
 from collections import deque
 from typing import Generator
 import threading
-from message_bus.schemas import Message
+from infrastructure.message_bus.schemas import Message
+
+__all__ = ['MessageBus']
 
 
 class MessageBus:

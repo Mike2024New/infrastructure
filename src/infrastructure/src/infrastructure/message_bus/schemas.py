@@ -5,6 +5,8 @@ from datetime import datetime
 
 _FMT = '%H:%M:%S.%f %d.%m.%Y'
 
+__all__ = ['Message']
+
 
 class Message(BaseModel):
     component_id: str = Field(description='Уникальный id компонента, полезно для нескольких экземпляров приложения')
