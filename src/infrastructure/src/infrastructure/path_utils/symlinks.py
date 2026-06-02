@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 
 
-def create_symlink(source_directory: Path, target_directory: Path) -> None:
+def create_symlink(source_directory: Path, target_directory: Path) -> dict:
     """
     Cоздание ссылки (симлинка) на папку с ресурсами (экономия дискового пространства)
     :param source_directory: исходная директория (большая папка с ресурсами)
@@ -46,8 +46,7 @@ def create_symlink(source_directory: Path, target_directory: Path) -> None:
             f'stdout: {res.stdout}\n'
             f'stderr: {res.stderr}\n'
         )
-    print(
-        f'Ссылка создана `{target_directory}`\n'
-        f'Исходный путь: {source_directory}\n'
-        f'Целевая директория: {target_full_path}\n'
-    )
+    return {
+        'target_dir': target_full_path,
+        'source_dir': source_directory,
+    }

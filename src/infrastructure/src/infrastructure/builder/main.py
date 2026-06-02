@@ -69,10 +69,19 @@ def build(
     python_lib = f"Lib\\site-packages" if is_windows else f"lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"
     python_lib = root_dir / '.venv' / python_lib
 
+    # выходные файлы
+    releases_folder_path = root_dir / 'releases' / 'win' if is_windows else root_dir / 'releases' / 'linux'
+    distributive_path = releases_folder_path / 'dist'
+    build_folder_path = releases_folder_path / 'build'
+    file_spec_path = releases_folder_path / f'{name}.spec'
+
     cmd = [
         sys.executable, '-m', 'PyInstaller',
         '--name', name,
+        f'--distpath', distributive_path,
         '--exclude-module', Path(__file__).stem,
+        '--workpath', build_folder_path,
+        '--specpath', file_spec_path.parent,
     ]
 
     # исключаемые модули
@@ -107,10 +116,6 @@ def build(
         cmd.append(f'--icon={str(icon_path)}')
 
     cmd.append(str(entry_point_path))
-
-    distributive_path = root_dir / 'dist'
-    build_folder_path = root_dir / 'build'
-    file_spec_path = root_dir / f'{name}.spec'
 
     # очистка следов предыдущего проекта
     if clear_old_distributive:
