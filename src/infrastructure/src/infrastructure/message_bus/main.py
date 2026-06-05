@@ -11,7 +11,7 @@ class MessageBus:
         self._messages = deque(maxlen=max_size)
         self._lock = threading.Lock()  # защита от гонки состояний
         self._message_new_event = threading.Event()  # наблюдатель за появлением сообщений
-        self._print_message = print_message
+        self.print_message = print_message
 
     def add(self, message: Message) -> None:
         """
@@ -22,7 +22,7 @@ class MessageBus:
         with self._lock:
             self._messages.append(message)
             self._message_new_event.set()  # сигнал о том что сообщение получено
-            if self._print_message:
+            if self.print_message:
                 print(message)
 
     def get_all(self) -> list[Message]:
