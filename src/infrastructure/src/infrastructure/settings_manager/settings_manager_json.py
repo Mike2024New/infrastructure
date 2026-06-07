@@ -43,7 +43,7 @@ class SettingsManager(Generic[T]):
         settings = self.settings if self.settings is not None else self._default_settings
 
         with open(file=self.json_file_path, mode='w', encoding='utf-8') as f:
-            f.write(settings.model_dump_json(ensure_ascii=True, indent=2))
+            f.write(settings.model_dump_json(ensure_ascii=False, indent=2))
 
     def apply_new_settings(self, settings: T) -> None:
         """
