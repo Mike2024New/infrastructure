@@ -47,8 +47,7 @@ class GitClient:
         # проверка что репозиторий существует
         print(f'Порверка наличия репозитория...')
         cmd = ['git', 'ls-remote', self._git_url]
-        res = subprocess.run(cmd, cwd=self._root_dir, capture_output=False)
-        input()
+        res = subprocess.run(cmd, cwd=self._root_dir, capture_output=True)
         if res.returncode != 0:
             raise RuntimeError(f'Ошибка, репозитория `{self._git_url}` не существует.')
 
