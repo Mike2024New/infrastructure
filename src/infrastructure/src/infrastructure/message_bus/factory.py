@@ -9,7 +9,7 @@ def message_bus_factory(component_name: str, component_id: str | None = None, pr
     # Пример использования
     # 1. Создать шину сообщений передав название компонента и указав, печатать ли сообщения в консоль
     message_buss = message_bus_factory(
-        component_id='001',  # идентификатор компонента (если не передать то сформируется uuid4)
+        component_id=str(uuid4())[:8],  # уникальный идентификатор компонента (закреплен за ним всё время)
         component_name='app',  # название главного компонента
         print_message=True,  # печатать ли сообщения в консоль
     )
@@ -51,7 +51,7 @@ def message_bus_factory(component_name: str, component_id: str | None = None, pr
         """
         message_bus.add(
             Message(
-                component_id=component_id or str(uuid4())[:8],
+                component_id=component_id,
                 component=component_name,
                 # обязательные для переопределения поля (subcomponent, level)
                 subcomponent=subcomponent,
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     # Пример использования
     # 1. Создать шину сообщений передав название компонента и указав, печатать ли сообщения в консоль
     message_buss = message_bus_factory(
-        component_id='001',  # идентификатор компонента (если не передать то сформируется uuid4)
+        component_id=str(uuid4())[:8],  # уникальный идентификатор компонента (закреплен за ним всё время)
         component_name='app',  # название главного компонента
         print_message=True,  # печатать ли сообщения в консоль
     )
