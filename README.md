@@ -19,6 +19,11 @@
 uv add git+https://github.com/Mike2024New/infrastructure.git
 ```
 
+Или:
+```bash
+pip install "infrastructure @ git+https://github.com/Mike2024New/infrastructure.git"
+```
+
 ## Компоненты (обращение к ним в коде через infrastructure. , например from infrastructure import message_bus)
 
 1. [MessageBus](docs/message_bus.md) - шина сообщений - общение приложений, логирование.
