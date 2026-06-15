@@ -8,6 +8,7 @@ import shutil
 import os
 from dataclasses import dataclass, field
 
+
 """
 Сборщик исполнительных файлов .exe для windows, и .bin для linux
 """

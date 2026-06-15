@@ -1,20 +1,18 @@
 [project]
-name = "infrastructure-factory"
+name = "infrastructure"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "Common infrastructure utilities"
 requires-python = ">=3.12"
 dependencies = [
-    "infrastructure",
-    "pydantic-settings>=2.14.1",
     "pydantic>=2.13.4,<3.0",
+    "pydantic-settings>=2.14.1",
     "pydantic-core>=2.46.4,<3.0",
 ]
 
-[tool.uv.workspace]
-members = [
-    "src/infrastructure",
-]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
-[tool.uv.sources]
-infrastructure = { workspace = true }
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["infrastructure*"]
