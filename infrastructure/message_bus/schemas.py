@@ -23,7 +23,7 @@ class Message(BaseModel):
                               description='Объект err, поствалидатор разберет на ошибку и трассировку.')
     result: dict[str, Any] = Field(default_factory=dict, description=f'если через сообщение передаются результаты.')
     data: dict[str, Any] = Field(default_factory=dict, description=f'Дополнительные даннные, например метрики.')
-    request_id: str = Field(default=None, description='Уникальный id текущей цепочки операций')
+    request_id: str | None = Field(default=None, description='Уникальный id текущей цепочки операций')
 
     @field_validator('error', mode='before')  # noqa
     @classmethod

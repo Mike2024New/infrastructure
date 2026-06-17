@@ -82,5 +82,5 @@ if __name__ == '__main__':
         level='start',  # уровни события
         event='app is running',  # event
         message='Приложение запущено',  # человекочитаемое сообщение
-        request_id=str(uuid4())[:8],  # id для цепочки операций
+        # request_id=str(uuid4())[:8],  # id для цепочки операций
     )
