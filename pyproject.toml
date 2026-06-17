@@ -7,4 +7,5 @@ dependencies = [
     "pydantic>=2.13.4,<3.0",
     "pydantic-settings>=2.14.1",
     "pydantic-core>=2.46.4,<3.0",
+    "rich==15.0.0",
 ]
