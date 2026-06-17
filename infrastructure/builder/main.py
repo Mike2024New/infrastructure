@@ -8,6 +8,7 @@ from infrastructure.path_utils.open_folder import open_folder
 import shutil
 import os
 from dataclasses import dataclass, field
+from rich import print
 
 """
 Сборщик исполнительных файлов .exe для windows, и .bin для linux
@@ -23,6 +24,7 @@ class BuildParameters:
     :param name: имя выходного приложения
     :param add_data:  устанавливаемые дополнительные ассеты
     :param add_binary: устанавливаемые .dll
+    :param hidden_imports: принудительные импорты модулей (передаются дополнительно если их не находит pyinstaller)
     :param excluded: исключаемые модули и файлы (поможет облегчить сборку)
     :param one_file:  собрать .exe одним файлом? (дольше по времени загрузка приложения)
     :param console: приложение консольное?
@@ -57,6 +59,7 @@ class BuildParameters:
     # не трогать, поля ниже. Заполнятся автоматически (то что в них попадет определяется в app/_engine/registry.py
     add_data: list[Path] = field(default_factory=list)
     add_binary: list[Path] = field(default_factory=list)
+    hidden_imports: list[str] = field(default_factory=list)
     excluded: list[Path] = field(default_factory=list)
     venv_dir_name: str = '.venv'
     open_folder: bool = False  # открыть папку после создания дистрибутива
@@ -84,6 +87,7 @@ def build(parameters: BuildParameters) -> None | Path:
         RuntimeError(f'Входной путь `{parameters.entry_point_path}` не существует.')
 
     # определение системных путей
+    print('[green]Формирование команды сборки[/green]')
     root_dir = get_root_dir_path(venv_dir_name=parameters.venv_dir_name)
     is_windows = platform.system().lower() == 'windows'
     separator = ";" if is_windows else ":"
@@ -126,6 +130,11 @@ def build(parameters: BuildParameters) -> None | Path:
             data_path = python_lib / d
             cmd.extend(['--add-data', f'{str(data_path)}{separator}{d}'])
 
+    # сборка hidden_imports
+    if parameters.hidden_imports is not None:
+        for h in parameters.hidden_imports:
+            cmd.extend(['--hidden-import', h])
+
     # собирать приложение 1 файлом
     if parameters.one_file:
         cmd.append('--onefile')
@@ -159,8 +168,9 @@ def build(parameters: BuildParameters) -> None | Path:
 
     resources_dir = root_dir / 'resources'
     if parameters.create_resources_symlink:
+        print('[green]Создание симлинка[/green]')
         if not resources_dir.exists():
-            print(f'Симлинк не создан так как в корне отсутствует папка resources.')
+            print(f'[yellow]Симлинк не создан так как в корне отсутствует папка resources.[/yellow]')
         # создание симлинка на папку с ресурсами
         create_symlink(
             source_directory=root_dir / 'resources',
@@ -172,10 +182,12 @@ def build(parameters: BuildParameters) -> None | Path:
     # копирование заданных файлов
     if parameters.copy_dirs:
         for target_dir, name in parameters.copy_dirs:
+            print(f'[green]Копирование из `{target_dir}` в `{distributive_path / name}`[/green]')
             shutil.copytree(str(target_dir), distributive_path / name)
 
-    # открытие папки в конце файла
+    # открытие папки в конце сборки
     if parameters.open_folder:
+        print('[green]открытие папки[/green]')
         open_folder(path=distributive_path)
 
     print(f'[green]Приложение собрано. {distributive_path.parent}[/green]')
