@@ -4,6 +4,7 @@ import platform
 from pathlib import Path
 from infrastructure.path_utils.path_finder import get_root_dir_path
 from infrastructure.path_utils.symlinks import create_symlink
+from infrastructure.path_utils.open_folder import open_folder
 import shutil
 import os
 from dataclasses import dataclass, field
@@ -40,6 +41,7 @@ class BuildParameters:
         icon_path=Path('icon.ico'), # путь к иконке (как правило лежит в root_dir)
         one_file=True, # сжать всё в один файл? (дольше по времени загрузка приложения)
         create_resources_symlink=True, # создать симлинк на папку с ресурсами? Если она есть в проекте.
+        open_folder=True # открыть папку с дистрибутивом после создания дистрибутива
     )
     """
     name: str = 'APP'
@@ -54,6 +56,7 @@ class BuildParameters:
     add_binary: list[Path] = field(default_factory=list)
     excluded: list[Path] = field(default_factory=list)
     venv_dir_name: str = '.venv'
+    open_folder: bool = False  # открыть папку после создания дистрибутива
 
 
 def build(parameters: BuildParameters) -> None | Path:
@@ -162,5 +165,8 @@ def build(parameters: BuildParameters) -> None | Path:
 
         )
 
+    # открытие папки в конце файла
+    if parameters.open_folder:
+        open_folder(path=distributive_path)
     print(f'[green]Приложение собрано. {distributive_path.parent}[/green]')
     return distributive_path
