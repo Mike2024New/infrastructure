@@ -2,6 +2,7 @@ from collections import deque
 from typing import Generator
 import threading
 from infrastructure.message_bus.schemas import Message
+from dataclasses import dataclass
 from rich import print
 
 __all__ = ['MessageBus', 'MessagePrintSettings']
@@ -14,14 +15,16 @@ colors = {
     'critical': 'red on white',  # красный на белом — максимальный контраст, беда
     'process': 'bright_cyan',  # голубой — процесс идёт, что-то происходит
     'start': 'bright_green',  # зелёный — запуск, всё хорошо
-    'stop': 'yellow',  # тёмно-жёлтый — завершение, спокойное
+    'stop': 'bright_green',  # зелёный — завершено, всё хорошо
 }
-
-from dataclasses import dataclass
 
 
 @dataclass
 class MessagePrintSettings:
+    """
+    :param print_date: показывать дату события?
+    :param raw_message: показывыть в консоли сырую строку?
+    """
     print_date: bool = True  # дополнительные настройки
     raw_message: bool = False  # сообщение в виде сырой json строки
 
