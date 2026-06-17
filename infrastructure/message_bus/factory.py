@@ -1,10 +1,15 @@
-from infrastructure.message_bus.main import MessageBus
+from infrastructure.message_bus.main import MessageBus, MessagePrintSettings
 from infrastructure.message_bus.schemas import Message
 from typing import Literal, Any
 from uuid import uuid4
 
 
-def message_bus_factory(component_name: str, component_id: str | None = None, print_message: bool = True):
+def message_bus_factory(
+        component_name: str,
+        component_id: str | None = None,
+        print_message: bool = True,
+        message_print_settings: MessagePrintSettings | None = None
+):
     """
     # Пример использования
     # 1. Создать шину сообщений передав название компонента и указав, печатать ли сообщения в консоль
@@ -22,7 +27,7 @@ def message_bus_factory(component_name: str, component_id: str | None = None, pr
         request_id=str(uuid4())[:8],  # id для цепочки операций
     )
     """
-    message_bus = MessageBus(print_message=print_message)
+    message_bus = MessageBus(print_message=print_message, print_settings=message_print_settings)
 
     def message_bus_add(
             subcomponent: str,
@@ -75,6 +80,7 @@ if __name__ == '__main__':
         component_id=str(uuid4())[:8],  # уникальный идентификатор компонента (закреплен за ним всё время)
         component_name='app',  # название главного компонента
         print_message=True,  # печатать ли сообщения в консоль
+        message_print_settings=MessagePrintSettings(print_date=True, raw_message=False),
     )
     # 2. Печатать
     message_buss(
