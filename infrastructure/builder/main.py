@@ -30,6 +30,8 @@ class BuildParameters:
     :param icon_path: путь к иконке
     :param venv_dir_name: название папки с виртуальным окружением (как правило обычно всегда .venv)
     :param clear_old_distributive: удалить следы предыдущих дистрибутивов?
+    :param open_folder: открыть папку с дистрибутивом после создания дистрибутива
+    :param copy_dirs: копируемые директории, список заполненный кортежами вида (<копируемая папка>, <её название в папке дистрибутива>)
     :return: None
     Пример заполнения:
     BuildParameters(
@@ -42,6 +44,7 @@ class BuildParameters:
         one_file=True, # сжать всё в один файл? (дольше по времени загрузка приложения)
         create_resources_symlink=True, # создать симлинк на папку с ресурсами? Если она есть в проекте.
         open_folder=True # открыть папку с дистрибутивом после создания дистрибутива
+        copy_dirs=[(./add_dir, 'dir_name'), (./add_dir2, 'dir_name2'),] # копируемые директории
     )
     """
     name: str = 'APP'
@@ -57,6 +60,7 @@ class BuildParameters:
     excluded: list[Path] = field(default_factory=list)
     venv_dir_name: str = '.venv'
     open_folder: bool = False  # открыть папку после создания дистрибутива
+    copy_dirs: list[tuple[Path, str]] = field(default_factory=list)  # список файлов для копирования
 
 
 def build(parameters: BuildParameters) -> None | Path:
@@ -165,8 +169,14 @@ def build(parameters: BuildParameters) -> None | Path:
 
         )
 
+    # копирование заданных файлов
+    if parameters.copy_dirs:
+        for target_dir, name in parameters.copy_dirs:
+            shutil.copytree(str(target_dir), distributive_path / name)
+
     # открытие папки в конце файла
     if parameters.open_folder:
         open_folder(path=distributive_path)
+
     print(f'[green]Приложение собрано. {distributive_path.parent}[/green]')
     return distributive_path
