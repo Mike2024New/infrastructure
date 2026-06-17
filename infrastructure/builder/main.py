@@ -8,7 +8,6 @@ import shutil
 import os
 from dataclasses import dataclass, field
 
-
 """
 Сборщик исполнительных файлов .exe для windows, и .bin для linux
 """
@@ -57,7 +56,7 @@ class BuildParameters:
     venv_dir_name: str = '.venv'
 
 
-def build(parameters: BuildParameters) -> None:
+def build(parameters: BuildParameters) -> None | Path:
     """
     Сборщик исполнительных файлов .exe для windows, и .bin для linux.
     Путь к .venv определяется автоматически
@@ -162,4 +161,6 @@ def build(parameters: BuildParameters) -> None:
             target_directory=distributive_path / parameters.name if not parameters.one_file else distributive_path,
 
         )
+
     print(f'[green]Приложение собрано. {distributive_path.parent}[/green]')
+    return distributive_path
