@@ -9,7 +9,7 @@ def message_bus_factory(
         component_name: str,
         component_id: str | None = None,
         print_message: bool = True,
-        print_message_settings: MessagePrintSettings | None = None,
+        message_print_settings: MessagePrintSettings | None = None,
         file_log_json_path: Path | None = None,
         file_log_settings: FileLogSettings | None = None,
 ):
@@ -48,13 +48,13 @@ def message_bus_factory(
     :param component_name: название компонента
     :param component_id:  уникальный идентификатор компонента (для удобства отслеживания микросервисов, это id всего приложения)
     :param print_message: печатать сообщения в консоль? (Не потребляет сообщения из шины сообещиний не делая их просмотренными)
-    :param print_message_settings: опциональные настройки печати ( сырая строка или человекочитаемый вывод, игнорирование ключей и так далее )
+    :param message_print_settings: опциональные настройки печати ( сырая строка или человекочитаемый вывод, игнорирование ключей и так далее )
     :param file_log_json_path: логировать сообщения в файл? если передать сюда путь, то логирование будет, иначе нет
     :param file_log_settings: опциональные настройки логирования (размер файла, и кол-во файлов)
     """
     message_bus = MessageBus(
         print_message=print_message,
-        print_settings=print_message_settings,
+        print_settings=message_print_settings,
         file_log_json_path=file_log_json_path,
         file_log_settings=file_log_settings,
     )
@@ -110,7 +110,7 @@ if __name__ == '__main__':
         component_id=str(uuid4())[:8],  # уникальный идентификатор компонента (закреплен за ним всё время)
         component_name='app',  # название главного компонента
         print_message=True,  # печатать ли сообщения в консоль
-        print_message_settings=MessagePrintSettings(
+        message_print_settings=MessagePrintSettings(
             print_date=True,
             raw_message=False,
             ignore_levels=['start'],
