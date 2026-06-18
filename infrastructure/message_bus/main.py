@@ -1,11 +1,15 @@
+import uuid
 from collections import deque
+from pathlib import Path
 from typing import Generator
 import threading
 from infrastructure.message_bus.schemas import Message
+from infrastructure.path_utils.rotate_file import rotate_file_by_size
 from dataclasses import dataclass
 from rich import print
+import atexit
 
-__all__ = ['MessageBus', 'MessagePrintSettings']
+__all__ = ['MessageBus', 'MessagePrintSettings', 'FileLogSettings']
 
 colors = {
     'debug': 'bright_black',  # серый — техническое, неважное
@@ -32,16 +36,32 @@ class MessagePrintSettings:
     """
     print_date: bool = True  # дополнительные настройки
     raw_message: bool = False  # сообщение в виде сырой json строки
-    ignore_levels: list[Literal['debug', 'info', 'warning', 'error', 'critical', 'start', 'stop', 'process',]] = field(
+    ignore_levels: list[Literal['debug', 'info', 'warning', 'error', 'critical', 'start', 'stop', 'process',]] | None = field(
         default_factory=list),  # игнорировать уровни
     ignore_levels_invers: bool = False,  # перевернуть условие, показывать только содержащиеся в ignore_levels ключи
+
+
+@dataclass
+class FileLogSettings:
+    """
+    Настройка файлов логирования. Здесь указывается максимальный размер, и количество файлов
+    :param max_size_mb: максимальный размер файла в mb
+    :param max_files:  максимальное количество файлов в размерах
+    :param rotation_disable:  отключить ротацию? (просто тогда пишет монолитный файл)
+    """
+    max_size_mb: int | float = 10
+    max_files: int = 10
+    rotation_disable: bool = False
 
 
 class MessageBus:
     def __init__(
             self,
             max_size: int = 1000,
-            print_message: bool = False, print_settings: MessagePrintSettings | None = None,
+            print_message: bool = False,
+            print_settings: MessagePrintSettings | None = None,
+            file_log_json_path: Path | None = None,
+            file_log_settings: FileLogSettings | None = None,
     ):
         """
 
@@ -54,6 +74,13 @@ class MessageBus:
         self._message_new_event = threading.Event()  # наблюдатель за появлением сообщений
         self.print_message = print_message  # для совместимости со старыми приложениями остается такой режим
         self.print_settings = print_settings
+        self._json_bufer_msg = []
+        self._json_bufer_msg_limit = 5
+        # настройки логирования
+        self._file_log_settings = file_log_settings or FileLogSettings()  # берутся по умолчанию если не указаны
+        self._json_log_path = file_log_json_path
+        self._json_file_lock = threading.Lock()  # защита файла json от состояния гонки
+        atexit.register(self._write_log)  # при выходе обязательно записать оставшиеся в буфере сообщения
 
     def add(self, message: Message) -> None:
         """
@@ -64,8 +91,42 @@ class MessageBus:
         with self._lock:
             self._messages.append(message)
             self._message_new_event.set()  # сигнал о том что сообщение получено
+            self._json_bufer_msg.append(message)
+
+            # сообщения добавляются через лимитированный буфер, чтобы не делать операцию ввода/вывода на каждый message
+            if len(self._json_bufer_msg) >= self._json_bufer_msg_limit:
+                self._write_log()
+
             if self.print_message:
                 self.render_message(msg=message)
+
+    def _write_log(self) -> None:
+        """
+        Добавление json логов
+        """
+        if self._json_log_path is None:
+            return
+
+        with self._json_file_lock:
+            if not self._json_bufer_msg:
+                return
+
+            buffer = self._json_bufer_msg
+            self._json_bufer_msg = []
+
+        # подключение ротатора файлов
+        @rotate_file_by_size(
+            max_size_mb=self._file_log_settings.max_size_mb,
+            max_files=self._file_log_settings.max_files,
+            path_key_name='file_path',  # определение ключа который отвечает за путь в операции записи
+            disable=self._file_log_settings.rotation_disable,
+        )
+        def write_log_file(file_path):
+            with open(file=file_path, mode='a', encoding='utf-8') as f:
+                for msg in buffer:
+                    f.write(msg.model_dump_json() + '\n')
+
+        write_log_file(file_path=self._json_log_path)
 
     def get_all(self) -> list[Message]:
         """
@@ -129,25 +190,38 @@ class MessageBus:
 
 
 if __name__ == '__main__':
+
+    logs_dir = Path.cwd() / 'logs'
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
     message_bus = MessageBus(
-        print_message=True,
+        print_message=True,  # активация печати принтов
+        # активация логирования сообщений в файлы (нужно просто передать путь, если путь не передан файлов логов не будет)
+        file_log_json_path=Path(logs_dir / 'log.jsonl'),
         # подключение настроек рендера сообщения
         print_settings=MessagePrintSettings(
             print_date=True,
             raw_message=False,
-            ignore_levels=['error'],
+            ignore_levels=['start', 'stop'],
             ignore_levels_invers=False,
+        ),
+        # подключение настроек ротации файлов (если не подключены но передан путь, возьмутся по умолчанию)
+        file_log_settings=FileLogSettings(
+            max_size_mb=0.5,
+            max_files=5,
+            rotation_disable=False,
         ),
     )
 
-    # добавление сообщения в шину сообщений
-    message_bus.add(
-        message=Message(
-            component_id='Любой идентификатор (но в компоненте он генерится из UUID)',
-            component='STT',
-            subcomponent='STT.audio_input',
-            level='info',
-            message='Компонент запущен',
-            error='Случилась ситуация',
+    for i in range(10000):
+        message_bus.add(
+            message=Message(
+                component_id=str(uuid.uuid4())[:4],
+                component='demo',
+                subcomponent='sub',
+                level='start',
+                message=f'Msg for example {i}',
+                event='event example',
+                data={'status': 'ok'},
+            )
         )
-    )

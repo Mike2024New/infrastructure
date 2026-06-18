@@ -1,22 +1,40 @@
-from infrastructure.message_bus.main import MessageBus, MessagePrintSettings
+from infrastructure.message_bus.main import MessageBus, MessagePrintSettings, FileLogSettings
 from infrastructure.message_bus.schemas import Message
 from typing import Literal, Any
 from uuid import uuid4
+from pathlib import Path
 
 
 def message_bus_factory(
         component_name: str,
         component_id: str | None = None,
         print_message: bool = True,
-        message_print_settings: MessagePrintSettings | None = None
+        print_message_settings: MessagePrintSettings | None = None,
+        file_log_json_path: Path | None = None,
+        file_log_settings: FileLogSettings | None = None,
 ):
     """
-    # Пример использования
+        # Пример использования
     # 1. Создать шину сообщений передав название компонента и указав, печатать ли сообщения в консоль
     message_buss = message_bus_factory(
         component_id=str(uuid4())[:8],  # уникальный идентификатор компонента (закреплен за ним всё время)
         component_name='app',  # название главного компонента
         print_message=True,  # печатать ли сообщения в консоль
+        # настройки печати (с игнорированием полей если нужно)
+        print_message_settings=MessagePrintSettings(
+            print_date=True,
+            raw_message=False,
+            ignore_levels=['start', 'stop'],
+            ignore_levels_invers=False,
+        ),
+        # активация логирования сообщений в файлы (нужно просто передать путь, если путь не передан файлов логов не будет)
+        file_log_json_path=Path(logs_dir / 'log.jsonl'),
+        # подключение настроек ротации файлов (если не подключены но передан путь, возьмутся по умолчанию)
+        file_log_settings=FileLogSettings(
+            max_size_mb=0.5, # максимальный размер одного файла
+            max_files=5, # максимально файлов
+            rotation_disable=False, # можно отключить ротацию
+        ),
     )
     # 2. Печатать
     message_buss(
@@ -26,8 +44,20 @@ def message_bus_factory(
         message='Приложение запущено',  # человекочитаемое сообщение
         request_id=str(uuid4())[:8],  # id для цепочки операций
     )
+
+    :param component_name: название компонента
+    :param component_id:  уникальный идентификатор компонента (для удобства отслеживания микросервисов, это id всего приложения)
+    :param print_message: печатать сообщения в консоль? (Не потребляет сообщения из шины сообещиний не делая их просмотренными)
+    :param print_message_settings: опциональные настройки печати ( сырая строка или человекочитаемый вывод, игнорирование ключей и так далее )
+    :param file_log_json_path: логировать сообщения в файл? если передать сюда путь, то логирование будет, иначе нет
+    :param file_log_settings: опциональные настройки логирования (размер файла, и кол-во файлов)
     """
-    message_bus = MessageBus(print_message=print_message, print_settings=message_print_settings)
+    message_bus = MessageBus(
+        print_message=print_message,
+        print_settings=print_message_settings,
+        file_log_json_path=file_log_json_path,
+        file_log_settings=file_log_settings,
+    )
 
     def message_bus_add(
             subcomponent: str,
@@ -80,7 +110,19 @@ if __name__ == '__main__':
         component_id=str(uuid4())[:8],  # уникальный идентификатор компонента (закреплен за ним всё время)
         component_name='app',  # название главного компонента
         print_message=True,  # печатать ли сообщения в консоль
-        message_print_settings=MessagePrintSettings(print_date=True, raw_message=False),
+        print_message_settings=MessagePrintSettings(
+            print_date=True,
+            raw_message=False,
+            ignore_levels=['start'],
+            ignore_levels_invers=False,
+        ),
+        # подключение настроек логирования
+        # file_log_json_path=Path('logs/log.jsonl'),
+        # file_log_settings=FileLogSettings(
+        #     max_size_mb=10,
+        #     max_files=5,
+        #     rotation_disable=False,
+        # )
     )
     # 2. Печатать
     message_buss(
