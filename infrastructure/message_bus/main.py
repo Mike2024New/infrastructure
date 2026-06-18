@@ -18,15 +18,23 @@ colors = {
     'stop': 'bright_green',  # зелёный — завершено, всё хорошо
 }
 
+from dataclasses import field
+from typing import Literal
+
 
 @dataclass
 class MessagePrintSettings:
     """
     :param print_date: показывать дату события?
     :param raw_message: показывыть в консоли сырую строку?
+    :param ignore_levels: игнорировать уровни чтобы не засорять консоль ( 'debug', 'info', 'warning', 'error', 'critical', 'start', 'stop', 'process')
+    :param ignore_levels_invers:  перевернуть условие, показывать только содержащиеся в ignore_levels ключи
     """
     print_date: bool = True  # дополнительные настройки
     raw_message: bool = False  # сообщение в виде сырой json строки
+    ignore_levels: list[Literal['debug', 'info', 'warning', 'error', 'critical', 'start', 'stop', 'process',]] = field(
+        default_factory=list),  # игнорировать уровни
+    ignore_levels_invers: bool = False,  # перевернуть условие, показывать только содержащиеся в ignore_levels ключи
 
 
 class MessageBus:
@@ -88,13 +96,25 @@ class MessageBus:
         :param msg: Message
         :return: None
         """
-        color = colors.get(msg.level, 'white')
-        # просто показывать сырую строку
+        # Ранний выход: нет настроек или сырой режим
         if self.print_settings is None or self.print_settings.raw_message:
+            color = colors.get(msg.level, 'white')
             raw = msg.model_dump_json(indent=2)
             print(f'[{color}]{raw}[/{color}]')
             return
 
+        # Фильтр по уровням
+        if not self.print_settings.ignore_levels:
+            pass  # список пуст — показываем всё
+        elif not self.print_settings.ignore_levels_invers:
+            if msg.level in self.print_settings.ignore_levels:
+                return  # игнорируем
+        else:
+            if msg.level not in self.print_settings.ignore_levels:
+                return  # показываем только из списка
+
+        # Обычный вывод
+        color = colors.get(msg.level, 'white')
         level_text = f'[{color}]{msg.level.ljust(8)}[/{color}]'
         text = f'{level_text} '
         if self.print_settings.print_date:
@@ -115,6 +135,8 @@ if __name__ == '__main__':
         print_settings=MessagePrintSettings(
             print_date=True,
             raw_message=False,
+            ignore_levels=['error'],
+            ignore_levels_invers=False,
         ),
     )
 
@@ -124,7 +146,7 @@ if __name__ == '__main__':
             component_id='Любой идентификатор (но в компоненте он генерится из UUID)',
             component='STT',
             subcomponent='STT.audio_input',
-            level='error',
+            level='info',
             message='Компонент запущен',
             error='Случилась ситуация',
         )
