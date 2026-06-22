@@ -9,6 +9,7 @@ __all__ = ['Message']
 
 
 class Message(BaseModel):
+    date: str = Field(default_factory=lambda: datetime.now().strftime(_FMT), description='Время происшествия.')
     component_id: str = Field(description='Уникальный id компонента, полезно для нескольких экземпляров приложения')
     component: str = Field(description='Публичное название компонента, так его видят другие API, например STT.')
     subcomponent: str = Field(description='Внутреннее название подкомпонетра, например STT.audio_input')
@@ -18,7 +19,6 @@ class Message(BaseModel):
     ]
     message: str | None = Field(default=None, description='Человекочитаемое понятное сообщение.')
     event: str | None = Field(default=None, description='Опциональное машиночитаемое событие (для парсеров логов).')
-    date: str = Field(default_factory=lambda: datetime.now().strftime(_FMT), description='Время происшествия.')
     error: Any | dict = Field(default_factory=dict,
                               description='Объект err, поствалидатор разберет на ошибку и трассировку.')
     result: dict[str, Any] = Field(default_factory=dict, description=f'если через сообщение передаются результаты.')
