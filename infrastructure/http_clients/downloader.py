@@ -71,7 +71,7 @@ class Downloader:
                 f.write(chunk)
                 downloaded += len(chunk)
                 self.progress = {
-                    'percent': (downloaded / total) * 100,
+                    'percent': (downloaded / total) * 100 if total > 0 else 0,
                     'downloaded': round(downloaded / (1024 ** 3), 2),
                     'total': round(total / (1024 ** 3), 2),
                 }
