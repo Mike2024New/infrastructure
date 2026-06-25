@@ -83,7 +83,7 @@ class Downloader:
                     )
         return dest
 
-    def download_many_file(
+    def download_many_files(
             self, base_url, filenames: list[str], print_progress=True, wait_for: bool = False,
             callback_result_complete=None
     ) -> None:

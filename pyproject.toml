@@ -1,6 +1,6 @@
 [project]
 name = "infrastructure"
-version = "0.5.0"
+version = "0.6.0"
 description = "Common infrastructure utilities"
 requires-python = ">=3.12"
 dependencies = [
