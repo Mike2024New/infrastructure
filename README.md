@@ -36,6 +36,8 @@ pip install -e "git+https://github.com/Mike2024New/infrastructure.git#egg=infras
 5. [HttpClients](docs/http_clients.md) - http клиент, для выполнения запросов, например загрузка файлов.
 6. [Other](docs/other.md) - прочие утилиты, которые не вошли ни в одну из категорий.
 
+**Обратная совместимость гарантирована**
+
 ## 📜Лицензии
 
 * Этот проект распространяется под лицензией MIT. Подробнее в файле [LICENSE](LICENSE).
