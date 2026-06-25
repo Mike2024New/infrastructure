@@ -16,6 +16,8 @@ from rich import print
 
 ROOT_DIR = get_root_dir_path()
 
+__all__ = ['BuildParameters', 'build']
+
 
 @dataclass
 class BuildParameters:

@@ -10,8 +10,9 @@
 ## Требования
 
 - Python >= 3.12
-- Пакет `infrastructure` предназначен для работы с виртуальным окружением в корневом каталоге, от этого зависит работа
-  всех встроенных компонентов. Крайне желательно называть папку с виртуальным окружением `.venv`.
+
+> Пакет `infrastructure` предназначен для работы с виртуальным окружением в корневом каталоге, от этого зависит работа
+> всех встроенных компонентов. Папку с виртуальным окружением необходимо называть `.venv`.
 
 ## Установка
 
@@ -20,8 +21,10 @@ uv add git+https://github.com/Mike2024New/infrastructure.git
 ```
 
 Или:
+
 ```bash
-pip install "infrastructure @ git+https://github.com/Mike2024New/infrastructure.git"
+# установка в режиме editable пакета.
+pip install -e "git+https://github.com/Mike2024New/infrastructure.git#egg=infrastructure"
 ```
 
 ## Компоненты (обращение к ним в коде через infrastructure. , например from infrastructure import message_bus)
@@ -30,7 +33,8 @@ pip install "infrastructure @ git+https://github.com/Mike2024New/infrastructure.
 2. [GitClient](docs/git_client.md) - простой git клиент, для автоматизированного получения обновления компонентов.
 3. [PathUtils](docs/path_utils.md) - набор утилит для работы с путями, например поиск корневого пути проекта.
 4. [Builder](docs/builder.md) - сборщик исполняемых файлов (.exe, .bin).
-5. [Other](docs/other.md) - прочие утилиты, которые не вошли ни в одну из категорий.
+5. [HttpClients](docs/http_clients.md) - http клиент, для выполнения запросов, например загрузка файлов.
+6. [Other](docs/other.md) - прочие утилиты, которые не вошли ни в одну из категорий.
 
 ## 📜Лицензии
 

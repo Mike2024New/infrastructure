@@ -47,10 +47,13 @@ def load_settings_env(settings_class: Type[_T], env_path: Path, env_prefix: str)
 
 
 if __name__ == '__main__':
+    # пример использования
+    # 1. Создать модель на базе SettingsEnvModel, с нужными полями
     class MySettings(SettingsEnvModel):
         user_name: str = ...
 
 
+    # 2. Получить настройки с помощью load_settings_env, передав путь к .env файлу и env_prefix (опционально)
     env_settings = load_settings_env(
         settings_class=MySettings,
         env_path=get_root_dir_path() / '.env',
