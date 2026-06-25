@@ -81,8 +81,32 @@ class Downloader:
                         f"{self.progress['downloaded']}/{self.progress['total']} GB",
                         end='', flush=True
                     )
-        print()
         return dest
+
+    def download_many_file(
+            self, base_url, filenames: list[str], print_progress=True, wait_for: bool = False,
+            callback_result_complete=None
+    ) -> None:
+        """
+        Загрузка пакета файлов, для тех случаев когда по базовому url можно скачать несколько файлов.
+        Например: base_url = `https://example.com/audio`
+        а файлы: ['sound1.mp3','sound2.mp3']
+        :param base_url: базовый url на котором размещены ресурсы
+        :param filenames: названия скачиваемых файлов
+        :param print_progress: показывать ли прогресс бар скачивания в терминале?
+        :param wait_for: дожидаться окончания загрузки?
+        :param callback_result_complete: действие с выполненным файлом
+        :return: None
+        """
+        for filename in filenames:
+            url = base_url + filename
+            self.download_file(
+                url=url,
+                filename=filename,
+                wait_for=wait_for,
+                print_progress=print_progress,
+                callback_result_complete=callback_result_complete,
+            )
 
     def download_file(
             self, url, filename, print_progress=True, wait_for: bool = False,
