@@ -23,14 +23,16 @@ class Downloader:
         self._stop_it = threading.Event()
         atexit.register(self.stop)
 
-    def _download_file(self, url, filename, print_progress=True) -> Path:
+    def _download_file(self, url, filename, print_progress=True, downloaded_name: str | None = None) -> Path:
         """
         Загрузка файла
         :param url: url для загрузки файла
         :param filename: название файла после скачивания
         :param print_progress: показывать процесс загрузки?
+        :param downloaded_name: название загрузки, если не указано то будет показан url загрузки
         :return: путь к файлу
         """
+        downloaded_name = downloaded_name if downloaded_name is not None else url
         self._stop_it.clear()
         dest = self._directory / filename
         local_size = dest.stat().st_size if dest.exists() else 0
@@ -77,7 +79,7 @@ class Downloader:
                 }
                 if print_progress and total:
                     print(
-                        f"\r📥 Загрузка `{filename}` - {self.progress['percent']:.1f}% - "
+                        f"\r📥 Загрузка `{downloaded_name}` - {self.progress['percent']:.1f}% - "
                         f"{self.progress['downloaded']}/{self.progress['total']} GB",
                         end='', flush=True
                     )
@@ -85,7 +87,7 @@ class Downloader:
 
     def download_many_files(
             self, base_url, filenames: list[str], print_progress=True, wait_for: bool = False,
-            callback_result_complete=None
+            callback_result_complete=None, downloaded_name: str | None = None,
     ) -> None:
         """
         Загрузка пакета файлов, для тех случаев когда по базовому url можно скачать несколько файлов.
@@ -96,6 +98,7 @@ class Downloader:
         :param print_progress: показывать ли прогресс бар скачивания в терминале?
         :param wait_for: дожидаться окончания загрузки?
         :param callback_result_complete: действие с выполненным файлом
+        :param downloaded_name: название загрузки, если не указано то будет показан url загрузки
         :return: None
         """
         for filename in filenames:
@@ -106,11 +109,12 @@ class Downloader:
                 wait_for=wait_for,
                 print_progress=print_progress,
                 callback_result_complete=callback_result_complete,
+                downloaded_name=downloaded_name,
             )
 
     def download_file(
             self, url, filename, print_progress=True, wait_for: bool = False,
-            callback_result_complete=None
+            callback_result_complete=None, downloaded_name: str | None = None,
     ) -> None:
         """
         Скачивание файла (с возможностью докачки если был ранее не докачанный файл), в отдельном потоке, не блокируя
@@ -120,11 +124,12 @@ class Downloader:
         :param print_progress: показывать процесс загрузки?
         :param wait_for: заблокировать поток до окночания загрузки файла?
         :param callback_result_complete: callback функция применяемая к результату (пути к файлу после загрузки)
+        :param downloaded_name: название загрузки, если не указано то будет показан url загрузки
         :return: None
         """
 
         def wrapper():
-            result = self._download_file(url, filename, print_progress)
+            result = self._download_file(url, filename, print_progress, downloaded_name)
             if callback_result_complete:
                 callback_result_complete(result)
 
@@ -152,5 +157,7 @@ if __name__ == '__main__':
         # заблокировать поток и дождаться загрузки?
         wait_for=True,
         # Действие с путем к файлу
-        callback_result_complete=lambda file: print(f"Загрузка завершена, путь: {file} ")
+        callback_result_complete=lambda file: print(f"Загрузка завершена, путь: {file} "),
+        # псевдоним загружаемого файла
+        downloaded_name='gemma-model-demo-3-4b',
     )
