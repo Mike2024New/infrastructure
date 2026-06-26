@@ -14,7 +14,6 @@ class Downloader:
         """
         Параметры для загрузчика
         :param directory: директория куда всё загружается
-        :param replace_416: если файл уже есть, или на сервере изменился, то размеры не совпадут и вылезет 416 ошибка
         """
         self.progress = 0
         self._replace_416 = replace_416
@@ -83,6 +82,8 @@ class Downloader:
                         f"{self.progress['downloaded']}/{self.progress['total']} GB",
                         end='', flush=True
                     )
+        if print_progress:
+            print()
         return dest
 
     def download_many_files(
