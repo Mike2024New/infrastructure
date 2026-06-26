@@ -50,14 +50,16 @@ def adpater_download_from_hf(
     )
     """
     start_time = perf_counter()
+    available_models_list_info = []
     parameters = None
     for repository in models_list.keys():
         for model in models_list[repository]:
             if model_name == model:
                 parameters = {'repository': repository, 'files': models_list[repository][model]}
+            available_models_list_info.append(model)
 
     if parameters is None:
-        message_error = f'Модель {model_name} не найдена.'
+        message_error = f'Модель {model_name} не найдена. Выберите из {available_models_list_info}'
         if message_bus_add is not None:
             message_bus_add(
                 subcomponent=SUBCOMPONENT,
