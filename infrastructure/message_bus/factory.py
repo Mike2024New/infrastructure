@@ -100,7 +100,6 @@ def message_bus_factory(
             )
         )
 
-
     return message_bus_add
 
 

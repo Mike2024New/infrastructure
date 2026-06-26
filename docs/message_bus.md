@@ -3,6 +3,13 @@
 ## История развития модуля
 
 <details>
+  <summary>26.06.2026 - v0.11.0 - 741486</summary>
+
+- message_bus_factry_v2 добавлена в `init` message bus, чтобы вызывать на прямую.
+
+</details>
+
+<details>
   <summary>26.06.2026 - v0.8.0 - e7d60c</summary>
 
 - добавлена новая фабрика шины сообщений message_bus_factory_v2, теперь она возвращает обратно совместимый объект
