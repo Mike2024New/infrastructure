@@ -82,8 +82,6 @@ class Downloader:
                         f"{self.progress['downloaded']}/{self.progress['total']} GB",
                         end='', flush=True
                     )
-        if print_progress:
-            print()
         return dest
 
     def download_many_files(
@@ -112,6 +110,7 @@ class Downloader:
                 callback_result_complete=callback_result_complete,
                 downloaded_name=downloaded_name,
             )
+        print()
 
     def download_file(
             self, url, filename, print_progress=True, wait_for: bool = False,
