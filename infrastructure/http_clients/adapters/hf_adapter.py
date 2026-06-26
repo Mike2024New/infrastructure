@@ -7,7 +7,7 @@ SUBCOMPONENT = 'hugging_face_downloader'
 
 def adpater_download_from_hf(
         models_list: dict, download_dir: Path, model_name: str, branch: str = 'main', replace_file: bool = False,
-        message_bus_add=None, wait_for: bool = True, print_progress: bool = True,
+        message_bus_add=None, wait_for: bool = True, print_progress: bool = True, nested_folder: bool = True,
 ) -> None:
     """
     HuggingFace загрузчик
@@ -34,6 +34,7 @@ def adpater_download_from_hf(
     :param message_bus_add: шина сообщений вызывающего компонента
     :param wait_for: заблокировать поток до окончания загрузки?
     :param print_progress: показывать прогресс в терминал?
+    :param nested_folder: Вложенная папка для скачанных файлов?
     :return: None
 
     --------------------------------------------------------------------------------------
@@ -76,7 +77,8 @@ def adpater_download_from_hf(
             event='start download model',
             message=f'Начало загрузки модели {model_name}',
         )
-    downloader = Downloader(directory=download_dir / model_name, replace_416=replace_file)
+    download_dir = download_dir / model_name if nested_folder else download_dir
+    downloader = Downloader(directory=download_dir, replace_416=replace_file)
     downloader.download_many_files(
         base_url=f"https://huggingface.co/{parameters['repository']}/{model_name}/resolve/{branch}/",
         filenames=parameters['files'],
@@ -113,4 +115,5 @@ if __name__ == '__main__':
         message_bus_add=None,
         wait_for=True,
         print_progress=True,
+        nested_folder=False,  # не будет создавать дополнительную папку для загрузки а положит в download_dir
     )
