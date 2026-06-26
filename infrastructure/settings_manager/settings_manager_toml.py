@@ -50,6 +50,15 @@ class TomlManager:
         with open(self.toml_path, "rb") as f:
             self.data = tomllib.load(f)
 
+    def get_version(self) -> str | None:
+        """
+        Получение текущей версии проекта из pyproject.toml
+        :return: версия в формате 0.1.0 или None
+        """
+        self._load()
+        version = self.data.get('project', {}).get('version', None)
+        return version
+
     def inc_version(self, major_in: bool = False, minor_in: bool = False, micro_in: bool = False) -> None:
         """
         Инкрементальный счётчик увеличения версии пакета (для простых случаев с числовыми версиями без букв)
@@ -78,4 +87,5 @@ if __name__ == '__main__':
         project_path=Path.cwd() / 'demo',
         toml_settings=TomlSettings(project_name='Demo')
     )
-    toml_manager.inc_version(minor_in=True)
+    print(toml_manager.get_version())
+    # toml_manager.inc_version(minor_in=True)

@@ -92,10 +92,11 @@ class GitClient:
                 f'Не удалось получить репозиторий `{self._git_url}`.\n'
                 f'stdout: {res.stdout}, stderr: {res.stderr}')
 
-    def commit(self, commit_message_auto: bool = False) -> None:
+    def commit(self, commit_message_auto: bool = False, commit_message: str | None = None) -> None:
         """
         отправить изменения на репозиторий
         :param commit_message_auto: генерировать автоматическое сообщение для коммита (uuid)
+        :param commit_message: задать текстовое сообщение на прямую (подавляется галочкой commit_message_auto если она передана)
         :return:
         """
         # проверка что есть что обновлять
@@ -124,13 +125,15 @@ class GitClient:
                 )
 
         # сообщение в комите
-        commit_msg = f'commit {str(uuid.uuid4())[:6]}' if commit_message_auto \
-            else input('Введите сообщение с описанием коммита:_')
+        if commit_message:
+            commit_message = commit_message
+        if commit_message_auto:
+            commit_message = f'commit {str(uuid.uuid4())[:6]}'
 
         # обновление
         cmd_list = [
             ['git', 'add', '.'],
-            ['git', 'commit', '-m', commit_msg],
+            ['git', 'commit', '-m', commit_message],
             ['git', 'push', '-u', 'origin', self._branch]
         ]
 

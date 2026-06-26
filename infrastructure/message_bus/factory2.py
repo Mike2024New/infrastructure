@@ -5,7 +5,7 @@ from uuid import uuid4
 from pathlib import Path
 
 
-def message_bus_factory(
+def message_bus_factory_v2(
         component_name: str,
         component_id: str | None = None,
         print_message: bool = True,
@@ -100,14 +100,22 @@ def message_bus_factory(
             )
         )
 
+    class MessageBusSettings:
+        @staticmethod
+        def enable_print():
+            message_bus.print_message = True
 
-    return message_bus_add
+        @staticmethod
+        def disable_print():
+            message_bus.print_message = False
+
+    return message_bus_add, MessageBusSettings
 
 
 if __name__ == '__main__':
     # Пример использования
     # 1. Создать шину сообщений передав название компонента и указав, печатать ли сообщения в консоль
-    message_buss = message_bus_factory(
+    message_buss, message_bus_settings = message_bus_factory_v2(
         component_id=str(uuid4())[:8],  # уникальный идентификатор компонента (закреплен за ним всё время)
         component_name='app',  # название главного компонента
         print_message=True,  # печатать ли сообщения в консоль
@@ -125,11 +133,21 @@ if __name__ == '__main__':
         #     rotation_disable=False,
         # )
     )
+    message_bus_settings.disable_print()  # подавление сообщений
     # 2. Печатать
     message_buss(
         subcomponent='audio_input',  # название подмодуля
-        level='stop',  # уровни события
+        level='info',  # уровни события
         event='app is running',  # event
-        message='Приложение запущено',  # человекочитаемое сообщение
+        message='message1',  # человекочитаемое сообщение
+        # request_id=str(uuid4())[:8],  # id для цепочки операций
+    )
+    message_bus_settings.enable_print()  # включение сообщений обратно
+    # 3. Печатать
+    message_buss(
+        subcomponent='audio_input',  # название подмодуля
+        level='info',  # уровни события
+        event='app is running',  # event
+        message='message2',  # человекочитаемое сообщение
         # request_id=str(uuid4())[:8],  # id для цепочки операций
     )

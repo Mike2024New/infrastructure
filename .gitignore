@@ -1,12 +1,15 @@
 # файлы с моделями и прочими ресурсами (это скинуть в релиз)
 resources/
 releases/
+release/
+python_embed/
+python/
+logs/
 models/
-# папки для промежуточного тестирования (хотя чаще используются tempfile)
 demo/
 
-# временно исключенный модуль на период доделок
-server/
+# тесты
+.pytest_cache/
 
 # Виртуальное окружение
 .venv/
@@ -36,9 +39,12 @@ settings.local.json
 secrets/
 *.key
 *.pem
+
 # мои заметки
 todo.txt
-main.py
+
+# промежуточные файлы
+helper*.py
 
 # Системные файлы Windows
 Thumbs.db
