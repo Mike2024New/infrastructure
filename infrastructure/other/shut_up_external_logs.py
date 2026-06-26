@@ -17,13 +17,13 @@ class ShutUpLogs:
         self._old_stdout = None
         self._old_stderr = None
         self._devnull = None
-        self._off = off
+        self.off = off
 
     def enable(self):
         """
         Подавление терминала (подмена дескрипторов)
         """
-        if self._off:
+        if self.off:
             return
         # сохранение оригинальных дескрипторов
         self._old_stdout = os.dup(1)
@@ -40,7 +40,7 @@ class ShutUpLogs:
         """
         Восстановление дескрипторов (связи с терминалом обратно)
         """
-        if self._off:
+        if self.off:
             return
         # Восстановить оригинальные дескрипторы
         os.dup2(self._old_stdout, 1)
