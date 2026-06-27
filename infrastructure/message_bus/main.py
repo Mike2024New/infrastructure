@@ -36,7 +36,8 @@ class MessagePrintSettings:
     """
     print_date: bool = True  # дополнительные настройки
     raw_message: bool = False  # сообщение в виде сырой json строки
-    ignore_levels: list[Literal['debug', 'info', 'warning', 'error', 'critical', 'start', 'stop', 'process',]] | None = field(
+    ignore_levels: list[Literal[
+        'debug', 'info', 'warning', 'error', 'critical', 'start', 'stop', 'process',]] | None = field(
         default_factory=list),  # игнорировать уровни
     ignore_levels_invers: bool = False,  # перевернуть условие, показывать только содержащиеся в ignore_levels ключи
 

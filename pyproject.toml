@@ -1,6 +1,6 @@
 [project]
 name = "infrastructure"
-version = "0.18.0"
+version = "0.19.0"
 description = "Common infrastructure utilities"
 requires-python = ">=3.12"
 dependencies = [
@@ -10,4 +10,5 @@ dependencies = [
     "rich==15.0.0",
     "requests>=2.34.2",
     "tomli-w>=1.2.0",
+    "pyinstaller>=6.21.0",
 ]
