@@ -13,8 +13,9 @@ class FlatJsonManager:
     def __init__(self, prompt_file_path: Path):
         self._prompt_file_path = prompt_file_path
         self._lock = Lock()
+        self._init()  # для создания файла сразу
 
-    def get(self, key: str, default=None) -> dict[str, Any]:
+    def get(self, key: str, default=None) -> Any:
         """Получение значения по конкретонму ключу"""
         with self._lock:
             data = self._read()
@@ -49,11 +50,13 @@ class FlatJsonManager:
         with open(self._prompt_file_path, mode='w', encoding='utf-16') as f:
             f.write(json.dumps(data, ensure_ascii=False, indent=2))
 
+    def _init(self) -> None:
+        """Создание пустого файла (если ещё нет)"""
+        if not self._prompt_file_path.exists():
+            self._save(data={})
+
     def _read(self) -> dict[str, Any]:
         """Чтение файла json, если файла нет то создание нового"""
-        if not self._prompt_file_path.exists():
-            data = {}
-            self._save(data=data)
         with open(self._prompt_file_path, mode='r', encoding='utf-16') as f:
             data = json.loads(f.read())
         return data
