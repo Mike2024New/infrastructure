@@ -14,7 +14,7 @@ class FlatJsonManager:
         self._prompt_file_path = prompt_file_path
         self._lock = Lock()
 
-    def get(self, key: str, default=None) -> None:
+    def get(self, key: str, default=None) -> dict[str, Any]:
         """Получение значения по конкретонму ключу"""
         with self._lock:
             data = self._read()
