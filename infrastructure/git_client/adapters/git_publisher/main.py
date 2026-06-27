@@ -71,5 +71,5 @@ def adapter_git_push_update(
         git_url=git_url,
         branch=git_branch,
     )
-    git_client.commit(commit_message_auto=True)
+    git_client.commit(commit_message=commit_hash)
     toml_manager.inc_version(minor_in=True)
