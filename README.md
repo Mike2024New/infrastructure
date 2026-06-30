@@ -34,7 +34,8 @@ pip install -e "git+https://github.com/Mike2024New/infrastructure.git#egg=infras
 3. [PathUtils](docs/path_utils.md) - набор утилит для работы с путями, например поиск корневого пути проекта.
 4. [Builder](docs/builder.md) - сборщик исполняемых файлов (.exe, .bin).
 5. [HttpClients](docs/http_clients.md) - http клиент, для выполнения запросов, например загрузка файлов.
-6. [Other](docs/other.md) - прочие утилиты, которые не вошли ни в одну из категорий.
+6. [cli_utils](docs/cli_utils.md) - cli утилиты (typer, консольный интерфейс и так далее).
+7. [Other](docs/other.md) - прочие утилиты, которые не вошли ни в одну из категорий.
 
 **Обратная совместимость гарантирована**
 
