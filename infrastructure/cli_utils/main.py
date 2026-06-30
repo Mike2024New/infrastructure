@@ -1,14 +1,45 @@
 import typer, subprocess
 from rich import print
 from pathlib import Path
+from typing import Callable, Any
 from infrastructure.builder import BuildParameters
 from infrastructure.builder.main import build as builder_func
 from infrastructure.git_client import adapter_git_push_update
 from infrastructure.path_utils.open_folder import open_folder
 
+_exe_mode: bool = False
+_message_bus: Any | None = None
+
 __all__ = [
     'get_cli_app',
+    'cli_command_execute',
 ]
+
+
+def cli_command_execute(callback: Callable, command_name: str) -> Any | None:
+    """
+    Обработка команды, с отловом ошибки
+    :param callback: исполняемая функция с аргументами
+    :param command_name: Название команды app.info.name
+    :return: результат выполнения функции либо None
+    """
+    try:
+        return callback()
+    except Exception as err:
+        if _message_bus is not None:  # логирование ошибки
+            _message_bus(
+                level='error',
+                subcomponent='cli',
+                message=f'Ошибка в процессе выполнения команды {command_name}',
+                event='cli run command error',
+                error=err,
+            )
+
+        if _exe_mode:  # для exe режима
+            print(f'[red]Ошибка в процессе выполнения команды: {err}[/red]')
+        else:  # для разработчиков
+            raise
+    return None
 
 
 def create_cli_app(name: str) -> typer.Typer:
@@ -33,8 +64,10 @@ def register_folder_command(app: typer.Typer, root_dir: Path) -> None:
     @app.command()
     def folder():
         """Открыть домашнюю папку приложения"""
-
-        open_folder(root_dir)
+        cli_command_execute(
+            callback=lambda: open_folder(root_dir),
+            command_name=app.info.name,
+        )
 
 
 def register_build_command(app: typer.Typer, build_settings: BuildParameters) -> None:
@@ -69,7 +102,10 @@ def register_build_command(app: typer.Typer, build_settings: BuildParameters) ->
         build_settings.create_resources_symlink = create_resources_symlink
         build_settings.entry_point_path = entry_path if entry_path is not None else build_settings.entry_point_path
 
-        builder_func(build_settings)
+        cli_command_execute(
+            callback=lambda: builder_func(build_settings),
+            command_name=app.info.name,
+        )
 
 
 def register_git_push(app: typer.Typer, root_dir: Path):
@@ -89,12 +125,15 @@ def register_git_push(app: typer.Typer, root_dir: Path):
             [yellow]git-push[/yellow]
             [yellow]git-push -nt[/yellow] - коммит без тестов
         """
-        if not notests:
-            cmd = ['pytest', '-v', '-s']
-            tests_passed = subprocess.run(cmd, cwd=root_dir).returncode == 0
 
-            if not tests_passed:
-                print(f'[red]Коммит отменен тесты не пройдены (либо использ. флаг -nt (--notests) )[/red]')
+        # выполнить тесты перед коммитом
+        if not notests:
+            result: subprocess.CompletedProcess = cli_command_execute(
+                callback=lambda: subprocess.run(['pytest', '-v', '-s'], cwd=root_dir),
+                command_name=app.info.name,
+            )
+            if result and result.returncode != 0:
+                print('[red]Коммит отменён — тесты не пройдены[/red]')
                 return
 
         adapter_git_push_update(
@@ -123,13 +162,13 @@ def register_run_test(app: typer.Typer, root_dir: Path):
         # # добавление опций / add options
         cmd.extend(['-v']) if v else cmd.extend([])
         cmd.extend(['-s']) if s else cmd.extend([])
-        result = subprocess.run(cmd, cwd=root_dir)
 
-        if result.returncode != 0:
-            print(
-                f"[red]Тесты не пройдены (код {result.returncode})[/red]")
-        else:
-            print("[green]Все тесты пройдены[/green]")
+        result: subprocess.CompletedProcess = cli_command_execute(
+            callback=lambda: subprocess.run(cmd, cwd=root_dir),
+            command_name=app.info.name,
+        )
+        if result and result.returncode != 0:
+            print('[red]Тесты не пройдены.[/red]')
 
 
 def get_cli_app(
@@ -137,6 +176,7 @@ def get_cli_app(
         root_dir: Path,
         build_settings: BuildParameters | None = None,
         exe_mode: bool = False,
+        message_bus=None,
 ) -> typer.Typer:
     """
     Получение экземпляра typer для консоли приложения, с предопределенными базовыми методами.
@@ -144,6 +184,7 @@ def get_cli_app(
     :param root_dir: корневая папка проекта
     :param build_settings: настройки для сборщика (передавать не обязательно, возьмутся опциональные параметры)
     :param exe_mode: режим exe (приложение) или разработка?
+    :param message_bus: Опционально: шина сообщений (см. подробнее `message_bus_factory_v2` в модуле infrastructure.message_bus)
     :return: экземпляр приложения. Который запускается app()
     Пример использования:
 
@@ -163,13 +204,16 @@ def get_cli_app(
         app()
     # =================================================================================
     """
+    global _exe_mode, _message_bus
+
     app = create_cli_app(name=name)
+    _exe_mode = exe_mode
+    _message_bus = message_bus
     # общие команды
     register_folder_command(app=app, root_dir=root_dir)
     if not exe_mode:  # команды которые будут доступны только в режиме разработчик
-        register_run_test(app=app, root_dir=root_dir)
+        build_settings = build_settings or BuildParameters()  # проброс настроек
         register_run_test(app=app, root_dir=root_dir)
         register_git_push(app=app, root_dir=root_dir)
-        build_settings = build_settings or BuildParameters()
         register_build_command(app=app, build_settings=build_settings)
     return app
