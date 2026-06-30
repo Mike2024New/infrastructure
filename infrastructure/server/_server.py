@@ -14,7 +14,7 @@ class Server:
     start(port) по умолчанию 8000
     stop() остановка из внешних приложений
     ---------------------------------------------
-    В реализации backend (или в cli) нужно вызывать метод server.stop()
+    В реализации backend (или в cli_utils) нужно вызывать метод server.stop()
     """
 
     def __init__(self, application: FastAPI):
