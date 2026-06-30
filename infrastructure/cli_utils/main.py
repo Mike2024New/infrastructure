@@ -60,19 +60,32 @@ def create_cli_app(name: str) -> typer.Typer:
     return app
 
 
+def register_run_command(app: typer.Typer):
+    @app.command()
+    def run(ctx: typer.Context):
+        """[red][bold]Нужно переопределить этот метод в приложении![/bold][/red]"""
+        cli_command_execute(
+            callback=lambda: print(
+                f'[yellow]Команда не переопределена, главный метод приложения должен называться run[/yellow]'
+            ),
+            command_name=ctx.command.name,
+        )
+
+
 def register_folder_command(app: typer.Typer, root_dir: Path) -> None:
     @app.command()
-    def folder():
+    def folder(ctx: typer.Context):
         """Открыть домашнюю папку приложения"""
         cli_command_execute(
             callback=lambda: open_folder(root_dir),
-            command_name=app.info.name,
+            command_name=ctx.command.name,
         )
 
 
 def register_build_command(app: typer.Typer, build_settings: BuildParameters) -> None:
     @app.command()
     def build(
+            ctx: typer.Context,
             name: str | None = typer.Option(None, '-n', '-name'),
             one_file: bool = typer.Option(False, '-oe', '--onefile', flag_value=True),
             entry_path: Path | None = typer.Option(None, '-ep', '--entry_path'),
@@ -104,13 +117,14 @@ def register_build_command(app: typer.Typer, build_settings: BuildParameters) ->
 
         cli_command_execute(
             callback=lambda: builder_func(build_settings),
-            command_name=app.info.name,
+            command_name=ctx.command.name,
         )
 
 
 def register_git_push(app: typer.Typer, root_dir: Path):
     @app.command()
     def git_push(
+            ctx: typer.Context,
             notests: bool = typer.Option(False, '-nt', '--notests', flag_value=True),
     ):
         """
@@ -130,7 +144,7 @@ def register_git_push(app: typer.Typer, root_dir: Path):
         if not notests:
             result: subprocess.CompletedProcess = cli_command_execute(
                 callback=lambda: subprocess.run(['pytest', '-v', '-s'], cwd=root_dir),
-                command_name=app.info.name,
+                command_name=ctx.command.name,
             )
             if result and result.returncode != 0:
                 print('[red]Коммит отменён — тесты не пройдены[/red]')
@@ -146,6 +160,7 @@ def register_git_push(app: typer.Typer, root_dir: Path):
 def register_run_test(app: typer.Typer, root_dir: Path):
     @app.command()
     def run_tests(
+            ctx: typer.Context,
             v: bool = typer.Option(False, '-v', flag_value=True),
             s: bool = typer.Option(False, '-s', flag_value=True),
     ):
@@ -165,7 +180,7 @@ def register_run_test(app: typer.Typer, root_dir: Path):
 
         result: subprocess.CompletedProcess = cli_command_execute(
             callback=lambda: subprocess.run(cmd, cwd=root_dir),
-            command_name=app.info.name,
+            command_name=ctx.command.name,
         )
         if result and result.returncode != 0:
             print('[red]Тесты не пройдены.[/red]')
@@ -211,6 +226,7 @@ def get_cli_app(
     _message_bus = message_bus
     # общие команды
     register_folder_command(app=app, root_dir=root_dir)
+    register_run_command(app=app)  # переопределяемый в дочках метод
     if not exe_mode:  # команды которые будут доступны только в режиме разработчик
         build_settings = build_settings or BuildParameters()  # проброс настроек
         register_run_test(app=app, root_dir=root_dir)
